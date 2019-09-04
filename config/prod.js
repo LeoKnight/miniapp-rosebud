@@ -1,8 +1,10 @@
+/* eslint-disable import/no-commonjs */
 module.exports = {
   env: {
     NODE_ENV: '"production"'
   },
   defineConstants: {
+    BASE_URL:'http://leo123.party:3000/api'
   },
   weapp: {},
   h5: {

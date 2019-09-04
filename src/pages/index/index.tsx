@@ -107,9 +107,9 @@ class Index extends Component {
     }
     let result: any = null
     if (current === 0) {  //加密
-      result = await getEncodeBase64(rowValue)
+      result = await getEncodeBase64(encodeURIComponent(rowValue.trim()))
     } else if (current === 1) { //解密
-      result = await getDecodeBase64(rowValue)
+      result = await getDecodeBase64(decodeURIComponent(rowValue.trim()))
     }
 
     this.setState({
@@ -123,6 +123,16 @@ class Index extends Component {
       rowValue:'',
       result: ''
     })
+  }
+
+  getBtnText(){
+    const { current } = this.state;
+    if (current === 0) {  //加密
+      return "加密"
+    } else if (current === 1) { //解密
+      return "解密"
+    }
+    return "出错"
   }
 
   render() {
@@ -189,7 +199,7 @@ class Index extends Component {
             onClick={this.handleClick}
             className="submit"
           >
-            加密
+            {this.getBtnText()}
           </AtButton>
         </View>
 

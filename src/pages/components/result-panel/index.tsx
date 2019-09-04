@@ -20,10 +20,7 @@ class ResultPanel extends Component<Props>{
     const { result } = this.props
     if(result){
       setClipboardData({
-        data:this.props.result,
-        success: function(res) {
-          console.log('1111',res)
-        }
+        data:this.props.result
       })
     }
   }

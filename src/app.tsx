@@ -57,10 +57,16 @@ class App extends Component {
   }
 }
 
+let domainUrl = ''
+if(process.env.NODE_ENV ==="development"){
+  domainUrl = "http://localhost:3000/api"
+}else if ( process.env.NODE_ENV ==="production" ) {
+  domainUrl = "http://leo123.party:3000/api"
+}
 const interceptor = function (chain) {
   const requestParams = chain.requestParams
   const { method, data, url } = requestParams
-  requestParams.url = 'http://localhost:3000/api'+url
+  requestParams.url =domainUrl +url
   console.log(`http ${method || 'GET'} --> ${url} data: `, data)
   return chain.proceed(requestParams)
     .then(res => {
