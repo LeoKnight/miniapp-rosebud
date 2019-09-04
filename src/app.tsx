@@ -1,6 +1,7 @@
 import Taro, { Component, Config } from '@tarojs/taro'
 import { Provider } from '@tarojs/mobx'
 import Index from './pages/index'
+import '@tarojs/async-await'
 
 import counterStore from './store/counter'
 
@@ -27,7 +28,8 @@ class App extends Component {
    */
   config: Config = {
     pages: [
-      'pages/index/index'
+      'pages/index/index',
+      'pages/crypto/index'
     ],
     window: {
       backgroundTextStyle: 'light',
