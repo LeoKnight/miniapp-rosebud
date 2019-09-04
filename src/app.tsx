@@ -28,8 +28,7 @@ class App extends Component {
    */
   config: Config = {
     pages: [
-      'pages/index/index',
-      'pages/crypto/index'
+      'pages/index/index'
     ],
     window: {
       backgroundTextStyle: 'light',
@@ -52,10 +51,27 @@ class App extends Component {
   render () {
     return (
       <Provider store={store}>
-        <Index />
+        <Index/>
       </Provider>
     )
   }
 }
+
+const interceptor = function (chain) {
+  const requestParams = chain.requestParams
+  const { method, data, url } = requestParams
+  requestParams.url = 'http://localhost:3000/api'+url
+  console.log(`http ${method || 'GET'} --> ${url} data: `, data)
+  return chain.proceed(requestParams)
+    .then(res => {
+      console.log(`http <-- ${url} result:`, res)
+      if(res.statusCode !== 200){
+        console.error('fetch error')
+      }
+      return res.data
+    })
+}
+
+Taro.addInterceptor(interceptor)
 
 Taro.render(<App />, document.getElementById('app'))

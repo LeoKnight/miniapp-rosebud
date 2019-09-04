@@ -1,9 +1,12 @@
 import { ComponentType } from 'react'
-import Taro, { Component, Config } from '@tarojs/taro'
-import { View, Button, Text, Image } from '@tarojs/components'
-import logoImg from '../../assets/images/logo_taro.png'
+import Taro, { Component, Config, getClipboardData } from '@tarojs/taro'
+import { View } from '@tarojs/components'
+import { AtTextarea, AtButton, AtTabs, AtTabsPane } from 'taro-ui'
 import { observer, inject } from '@tarojs/mobx'
 
+
+import { getEncodeBase64, getDecodeBase64 } from './api'
+import ResultPanel from '../components/result-panel'
 import './index.scss'
 
 type PageStateProps = {
@@ -12,13 +15,17 @@ type PageStateProps = {
     increment: Function,
     decrement: Function,
     incrementAsync: Function
-  }
+  },
+  demo: string
 }
 
 interface Index {
   props: PageStateProps;
   state: any;
 }
+
+
+const tabList = [{ title: '加密' }, { title: '解密' }]
 
 @inject('counterStore')
 @observer
@@ -32,24 +39,22 @@ class Index extends Component {
    * 提示和声明 navigationBarTextStyle: 'black' | 'white' 类型冲突, 需要显示声明类型
    */
   config: Config = {
-    navigationBarTitleText: '首页'
+    navigationBarTitleText: '加密/解密'
   }
 
-  constructor () {
+  constructor() {
     super(...arguments)
 
     this.state = {
-      list: [
-        {
-          id: 'crypto',
-          title: '加密/解密',
-          content: '文本内容的加密/解密',
-        },
-      ]
+      rowValue: '',
+      result: '',
+      current: 0
     }
+    this.handleClick = this.handleClick.bind(this)
+    this.handleChangeTab = this.handleChangeTab.bind(this)
   }
 
-  onShareAppMessage () {
+  onShareAppMessage() {
     return {
       title: '叮当喵的工具箱',
       path: '/pages/index/index',
@@ -65,69 +70,133 @@ class Index extends Component {
     })
   }
 
-  componentWillMount () { }
+  componentWillMount() { }
 
-  componentWillReact () {
+  componentWillReact() {
     console.log('componentWillReact')
   }
 
-  componentDidMount () { }
+  componentDidMount() {
+    getClipboardData({
+      success: (res)=> {
+        const { data } = res;
+        if(data){
+          this.setState({
+            rowValue:data
+          })
+        }
+      }
+    })
+   }
 
-  componentWillUnmount () { }
+  componentWillUnmount() { }
 
-  componentDidShow () { }
+  componentDidShow() { }
 
-  componentDidHide () { }
+  componentDidHide() { }
 
-  increment = () => {
-    const { counterStore } = this.props
-    counterStore.increment()
+  handleTextareaChange(stateName, e) {
+    this.setState({
+      [stateName]: e.target.value
+    })
+  }
+  async handleClick() {
+    const { rowValue, current } = this.state;
+    if (!rowValue) {
+      return false
+    }
+    let result: any = null
+    if (current === 0) {  //加密
+      result = await getEncodeBase64(rowValue)
+    } else if (current === 1) { //解密
+      result = await getDecodeBase64(rowValue)
+    }
+
+    this.setState({
+      result:result.toString()
+    })
   }
 
-  decrement = () => {
-    const { counterStore } = this.props
-    counterStore.decrement()
+  handleChangeTab(tabIndex) {
+    this.setState({
+      current: tabIndex,
+      rowValue:'',
+      result: ''
+    })
   }
 
-  incrementAsync = () => {
-    const { counterStore } = this.props
-    counterStore.incrementAsync()
-  }
-
-  render () {
-    const { counterStore: { counter } } = this.props
-    const { list } = this.state
+  render() {
+    const { current, rowValue, result } = this.state
     return (
       <View className='page page-index'>
 
-        <View className='logo'>
-          <Image src={logoImg} className='img' mode='widthFix' />
-        </View>
-        <View className='page-title'>叮当喵的工具箱</View>
-        <View className='module-list'>
+        <View className='page-title'>叮当喵的加密/解密工具</View>
 
-          {list.map((item, index) => (
-            <View
-              className='module-list__item'
-              key={index}
-              data-id={item.id}
-              data-name={item.title}
-              data-list={item.subpages}
-              onClick={this.gotoPanel}
-            >
-              <View className='module-list__item-title'>{item.title}</View>
-              <View className='module-list__item-content'>{item.content}</View>
-            </View>
-          ))}
+        <View className="main">
+
+
+          <AtTabs current={current} tabList={tabList} onClick={this.handleChangeTab}>
+            <AtTabsPane current={current} index={0} >
+              <View className="tab-body" >
+
+                <View className='panel'>
+                  <View className='panel__title'>原始内容</View>
+                  <View className='panel__content'>
+
+                    <View className='example-item'>
+                      <AtTextarea
+                        value={rowValue}
+                        onChange={this.handleTextareaChange.bind(this, 'rowValue')}
+                        maxLength={1000}
+                        placeholder='您需要加密的内容'
+                      />
+                    </View>
+
+                  </View>
+                </View>
+
+                <ResultPanel result={result}/>
+
+              </View>
+            </AtTabsPane>
+            <AtTabsPane current={this.state.current} index={1}>
+              <View className="tab-body" >
+                <View className="tab-body" >
+
+                  <View className='panel'>
+                    <View className='panel__title'>原始内容</View>
+                    <View className='panel__content'>
+                      <View className='example-item'>
+                        <AtTextarea
+                          value={rowValue}
+                          onChange={this.handleTextareaChange.bind(this, 'rowValue')}
+                          maxLength={1000}
+                          placeholder='您需要解密的内容'
+                        />
+                      </View>
+                    </View>
+                  </View>
+
+                  <ResultPanel result={result}/>
+
+                </View>
+              </View>
+            </AtTabsPane>
+          </AtTabs>
+
+
+          <AtButton
+            onClick={this.handleClick}
+            className="submit"
+          >
+            加密
+          </AtButton>
         </View>
 
-        <Button onClick={this.increment}>+</Button>
-        <Button onClick={this.decrement}>-</Button>
-        <Button onClick={this.incrementAsync}>Add Async</Button>
-        <Text>{counter}</Text>
+
       </View>
     )
   }
 }
 
-export default Index  as ComponentType
+export default Index as ComponentType
