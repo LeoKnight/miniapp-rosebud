@@ -61,7 +61,7 @@ let domainUrl = ''
 if(process.env.NODE_ENV ==="development"){
   domainUrl = "http://localhost:3000/api"
 }else if ( process.env.NODE_ENV ==="production" ) {
-  domainUrl = "http://leo123.party:3000/api"
+  domainUrl = "http://leo123.party/api"
 }
 const interceptor = function (chain) {
   const requestParams = chain.requestParams

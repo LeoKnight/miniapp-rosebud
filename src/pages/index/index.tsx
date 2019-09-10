@@ -1,5 +1,5 @@
 import { ComponentType } from 'react'
-import Taro, { Component, Config, getClipboardData } from '@tarojs/taro'
+import Taro, { Component, Config, getClipboardData, setClipboardData } from '@tarojs/taro'
 import { View } from '@tarojs/components'
 import { AtTextarea, AtButton, AtTabs, AtTabsPane } from 'taro-ui'
 import { observer, inject } from '@tarojs/mobx'
@@ -114,7 +114,12 @@ class Index extends Component {
 
     this.setState({
       result:result.toString()
+    },()=>{
+      setClipboardData({
+        data:result
+      })
     })
+
   }
 
   handleChangeTab(tabIndex) {
